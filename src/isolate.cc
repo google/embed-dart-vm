@@ -68,6 +68,14 @@ void Isolate::InitializeBuiltinLibraries() {
   uri_library = CreateUriLibrary();
 }
 
+// static
+void Isolate::ShutdownBuiltinLibraries() {
+  assert(core_library != NULL);
+  delete uri_library;
+  delete io_library;
+  delete core_library;
+}
+
 void Isolate::Invoke(const char* function) {
   std::cout << __FUNCTION__ << ": " << function << std::endl;
   Dart_EnterScope();

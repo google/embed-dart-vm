@@ -12,6 +12,7 @@ class Isolate {
     }
 
     static void InitializeBuiltinLibraries();
+    static void ShutdownBuiltinLibraries();
 
     static Library* core_library;
     static Library* uri_library;

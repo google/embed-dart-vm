@@ -177,38 +177,6 @@ bool IsolateInterruptCallback() {
 
 void IsolateShutdownCallback(void* callback_data) {
 }
-/*
-struct NativeEntry {
-  int32_t hash;
-  Dart_NativeFunction function;
-  const char* name;
-  int32_t arg_count;
-};
-NativeEntry native_entry_exit;
-NativeEntry native_entry_print;
-NativeEntry native_entry_null;
-*/
-
-Dart_NativeFunction CoreLibraryResolver(Dart_Handle name, int argumentCount) {
-  /*
-  const char* native_function_name = NULL;
-  Dart_Handle result = Dart_StringToCString(name, &native_function_name);
-  assert(native_function_name);
-
-  int32_t hash = fnv1aHash(native_function_name);
-
-  NativeEntry* function_entry = core_native_entries;
-
-  while (function_entry->function != NULL) {
-    if (function_entry->hash == hash) {
-      assert(function_entry->argument_count == argument_count);
-      return function_entry->function;
-    }
-    ++functionEntry;
-  }
-*/
-  return 0;
-}
 
 // public
 void Initialize(int argc, const char* argv[]) {
@@ -218,6 +186,11 @@ void Initialize(int argc, const char* argv[]) {
                          IsolateShutdownCallback));
 
   Isolate::InitializeBuiltinLibraries();
+}
+
+// public
+void Shutdown() {
+  Isolate::ShutdownBuiltinLibraries();
 }
 
 // public
