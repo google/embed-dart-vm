@@ -20,7 +20,7 @@ Dart_Handle Library::Load() {
 
   if (Dart_IsError(library)) {
     std::cerr << "Failed to load library: " << name_ << "|" << source_
-      << ": " << Dart_GetError(library) << std::endl;
+              << ": " << Dart_GetError(library) << std::endl;
     return library;
   }
 
