@@ -1,5 +1,5 @@
 #library('helloworld');
 
-void main()
+void main() {
   print("hello world");
 }
