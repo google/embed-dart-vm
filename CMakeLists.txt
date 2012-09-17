@@ -14,6 +14,7 @@ include_directories(${DART_SDK_ROOT}/runtime/include)
 link_directories(${DART_SDK_ROOT}/xcodebuild/${CMAKE_BUILD_TYPE})
 
 add_executable(embed-dart-vm
+    src/dart.cc
     src/isolate.cc
     src/library.cc
     src/main.cc
