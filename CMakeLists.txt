@@ -13,17 +13,28 @@ set(DART_SDK_ROOT ~/git/dart/dart)
 include_directories(${DART_SDK_ROOT}/runtime/include)
 link_directories(${DART_SDK_ROOT}/xcodebuild/${CMAKE_BUILD_TYPE})
 
-add_executable(embed-dart-vm
+add_library(embed_dart_vm
     src/dart.cc
     src/isolate.cc
     src/library.cc
-    src/main.cc
     ${DART_SDK_ROOT}/xcodebuild/DerivedSources/${CMAKE_BUILD_TYPE}/snapshot_gen.cc)
 
-target_link_libraries(embed-dart-vm
+add_executable(embed-dart-vm_a src/main.cc)
+target_link_libraries(embed-dart-vm_a
+    embed_dart_vm
     dart_builtin
     dart_export
     dart_lib_withcore
+    dart_vm
+    double_conversion
+    jscre)
+
+add_executable(embed-dart-vm_b src/main.cc)
+target_link_libraries(embed-dart-vm_b
+    embed_dart_vm
+    dart_builtin
+    dart_export
+    dart_lib
     dart_vm
     double_conversion
     jscre)

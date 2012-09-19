@@ -2,38 +2,58 @@
 #include "library.h"
 
 #include <iostream>
+#include <map>
+#include <string>
+
+#define BUILTIN_FUNCTION_NAME(name) Builtin_##name
+#define DECLARE_BUILTIN_FUNCTION(name) \
+    extern void BUILTIN_FUNCTION_NAME(name)(Dart_NativeArguments args)
+
+DECLARE_BUILTIN_FUNCTION(Exit);
+DECLARE_BUILTIN_FUNCTION(Logger_PrintString);
 
 namespace dart {
 namespace {
 
-Dart_NativeFunction CoreLibraryResolver(Dart_Handle name, int arg_count) {
-  const char* nativeFunctionName = 0;
-  Dart_StringToCString(name, &nativeFunctionName);
-  std::cout << "WARNING: " << nativeFunctionName << " unresolved." << std::endl;
-  return NULL;
-}
+typedef std::map<std::string, Dart_NativeFunction> NativeFunctionMap;
 
-Dart_NativeFunction IOLibraryResolver(Dart_Handle name, int arg_count) {
-  const char* nativeFunctionName = 0;
-  Dart_StringToCString(name, &nativeFunctionName);
-  std::cout << "WARNING: " << nativeFunctionName << " unresolved." << std::endl;
+NativeFunctionMap core_native_function_map;
+NativeFunctionMap io_native_function_map;
+
+template<const NativeFunctionMap& function_map>
+Dart_NativeFunction LibraryResolver(Dart_Handle name, int arg_count) {
+  const char* native_function_name = 0;
+  Dart_StringToCString(name, &native_function_name);
+  NativeFunctionMap::const_iterator func_it =
+      function_map.find(native_function_name);
+  if (func_it != function_map.end())
+    return func_it->second;
+  std::cout << "WARNING: " << native_function_name << " is unresolved."
+            << std::endl;
   return NULL;
 }
 
 Library* CreateCoreLibrary() {
-  // TODO: register any native methods.
-  return new Library("dart:builtin", NULL, CoreLibraryResolver, NULL);
+  core_native_function_map.insert(
+      std::make_pair("Exit", BUILTIN_FUNCTION_NAME(Exit)));
+  core_native_function_map.insert(
+      std::make_pair("Logger_PrintString",
+                     BUILTIN_FUNCTION_NAME(Logger_PrintString)));
+  return new Library("dart:builtin",
+                     NULL,
+                     LibraryResolver<core_native_function_map>,
+                     NULL);
 }
 
 void IOLibraryInitializer(Dart_Handle library) {
-  Dart_Handle timerClosure =
+  Dart_Handle timer_closure =
     Dart_Invoke(library, Dart_NewString("_getTimerFactoryClosure"), 0, 0);
-  Dart_Handle isolateLibrary =
+  Dart_Handle isolate_library =
     Dart_LookupLibrary(Dart_NewString("dart:isolate"));
 
   Dart_Handle args[1];
-  args[0] = timerClosure;
-  Dart_Handle result = Dart_Invoke(isolateLibrary,
+  args[0] = timer_closure;
+  Dart_Handle result = Dart_Invoke(isolate_library,
                                    Dart_NewString("_setTimerFactoryClosure"),
                                    1,
                                    args);
@@ -42,7 +62,8 @@ void IOLibraryInitializer(Dart_Handle library) {
 
 Library* CreateIOLibrary() {
   // TODO: register any native methods.
-  return new Library("dart:io", 0, IOLibraryResolver, IOLibraryInitializer);
+  return new Library("dart:io", 0, LibraryResolver<io_native_function_map>,
+                     IOLibraryInitializer);
 }
 
 Library* CreateUriLibrary() {
@@ -83,7 +104,10 @@ void Isolate::Invoke(const char* function) {
                                    Dart_NewString(function),
                                    0,
                                    NULL);
-  assert(!Dart_IsError(result));
+  if (Dart_IsError(result)) {
+    std::cerr << "Failed to invoke " << function << ": "
+              << Dart_GetError(result);
+  }
   Dart_RunLoop();
   Dart_ExitScope();
 }
