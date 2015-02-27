@@ -1,3 +1,6 @@
+#ifndef SCOPED_PTR_H_
+#define SCOPED_PTR_H_
+
 template<typename T>
 class scoped_ptr {
  public:
@@ -11,4 +14,4 @@ class scoped_ptr {
   T* ptr_;
 };
 
-
+#endif // SCOPED_PTR_H_
